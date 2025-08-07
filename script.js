@@ -1,3 +1,69 @@
+function saveBoard() {
+    const boardState = {};
+
+    const lists = document.querySelectorAll('.list');
+    lists.forEach(list => {
+        const listId = list.id;
+        const cards = list.querySelectorAll('.card');
+        boardState[listId] = [];
+
+        cards.forEach(card => {
+            boardState[listId].push({
+                id: card.id,
+                text: card.textContent
+            });
+        });
+    });
+
+    localStorage.setItem('kanbanBoard', JSON.stringify(boardState));
+}
+
+function saveBoard() {
+    console.log("Saving to localStorage...");
+    // rest of save code...
+}
+
+
+let cardIdCounter = 4; // update this if you add more cards later
+
+document.querySelector('.enter').addEventListener('click', () => {
+    const taskText = prompt('Enter task name:');
+    if (!taskText) return;
+
+    const newCard = document.createElement('div');
+    newCard.classList.add('card');
+    newCard.setAttribute('draggable', 'true');
+    newCard.setAttribute('id', `card${cardIdCounter++}`);
+    newCard.textContent = taskText;
+
+    // Attach the existing drag handlers
+    newCard.addEventListener("dragstart", dragStart);
+    newCard.addEventListener("dragend", dragEnd);
+
+    // Append to the "To Do" column
+    document.getElementById('list1').appendChild(newCard);
+    saveBoard();
+
+});
+
+let deleteMode = false;
+
+document.querySelector('.delete').addEventListener('click', () => {
+    deleteMode = !deleteMode;
+
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        if (deleteMode) {
+            card.classList.add('deleting');
+            card.addEventListener('click', deleteCardOnce);
+        } else {
+            card.classList.remove('deleting');
+            card.removeEventListener('click', deleteCardOnce);
+        }
+    });
+});
+
+
 const cards = document.querySelectorAll(".card");
 const lists = document.querySelectorAll(".list");
 
@@ -33,5 +99,13 @@ function dragDrop(e){
     const id = e.dataTransfer.getData("text/plain");
     const card= document.getElementById(id);
     this.appendChild(card);
+    saveBoard();
     this.classList.remove("over");
-}
+
+
+function deleteCardOnce(e) {
+    if (!deleteMode) return;
+    e.stopPropagation(); // Prevent event bubbling
+    this.remove();
+saveBoard();
+}}
