@@ -1,4 +1,5 @@
 function saveBoard() {
+    console.log("Saving to localStorage...");
     const boardState = {};
 
     const lists = document.querySelectorAll('.list');
@@ -16,11 +17,6 @@ function saveBoard() {
     });
 
     localStorage.setItem('kanbanBoard', JSON.stringify(boardState));
-}
-
-function saveBoard() {
-    console.log("Saving to localStorage...");
-    // rest of save code...
 }
 
 
@@ -101,11 +97,39 @@ function dragDrop(e){
     this.appendChild(card);
     saveBoard();
     this.classList.remove("over");
-
+}
 
 function deleteCardOnce(e) {
     if (!deleteMode) return;
     e.stopPropagation(); // Prevent event bubbling
     this.remove();
 saveBoard();
-}}
+}
+
+window.addEventListener('load', () => {
+    const saved = localStorage.getItem('kanbanBoard');
+    if (!saved) return;
+
+    const boardState = JSON.parse(saved);
+    for (const listId in boardState) {
+        const list = document.getElementById(listId);
+        boardState[listId].forEach(cardData => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.setAttribute('draggable', 'true');
+            card.setAttribute('id', cardData.id);
+            card.textContent = cardData.text;
+
+            card.addEventListener("dragstart", dragStart);
+            card.addEventListener("dragend", dragEnd);
+
+            list.appendChild(card);
+
+            const idNum = parseInt(cardData.id.replace('card', ''));
+            if (idNum >= cardIdCounter) {
+                cardIdCounter = idNum + 1;
+            }
+        });
+    }
+});
+
